@@ -1,16 +1,20 @@
 ; The base path is relative to Ahk2Exe.exe
 ;@Ahk2Exe-Base ..\v2\AutoHotkey64.exe
-
 #Requires AutoHotkey v2.0
+
 #SingleInstance force
 #WinActivateForce
 #UseHook
 
+SetWorkingDir(A_ScriptDir)
+ListLines(False)
+SetWinDelay(0)
+SetControlDelay(0)
+ProcessSetPriority("H")
+
 A_HotkeyInterval := 20
 A_MaxHotkeysPerInterval := 20000
 A_MenuMaskKey := "vk07"
-
-; Credits to Ciantic: https://github.com/Ciantic/VirtualDesktopAccessor
 
 #Include "%A_ScriptDir%\libraries\read-ini.ahk"
 #Include "%A_ScriptDir%\libraries\tooltip.ahk"
@@ -19,7 +23,7 @@ A_MenuMaskKey := "vk07"
 ; Set Up Library Hooks
 ; ======================================================================
 
-SetWorkingDir(A_ScriptDir)
+; Credits to Ciantic: https://github.com/Ciantic/VirtualDesktopAccessor
 
 ; Path to the DLL, relative to the script
 VDA_PATH := "libraries\VirtualDesktopAccessor.dll"
