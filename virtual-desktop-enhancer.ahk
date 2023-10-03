@@ -665,7 +665,7 @@ _FocusIfRequested() {
 ; Give focus to the foremost window on the desktop.
 _Focus() {
     foremostWindowId := _GetForemostWindowIdOnDesktop(_GetCurrentDesktopNumber())
-    WinActivate foremostWindowId
+    Try WinActivate(foremostWindowId)
 }
 
 ; Select the ahk_id of the foremost window in a given virtual desktop.
@@ -674,7 +674,7 @@ _GetForemostWindowIdOnDesktop(n) {
         n := 10
     }
     ; Desktop count starts at 1 for this script, but at 0 for Windows.
-    n -= 1
+    n--
 
     ; winIDList contains a list of windows IDs ordered from the top to the bottom for each desktop.
     winIDList := WinGetList()
