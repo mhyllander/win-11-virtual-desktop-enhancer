@@ -32,7 +32,11 @@ ReadIni( filename := 0 )
 				if (isArray) {
 					k := match[1]
 					i := Integer(match[2])
-					%key%%k%.InsertAt(i, v)
+					if (%key%%k%.Length >= i) {
+						%key%%k%[i] = v
+					} else {
+						%key%%k%.InsertAt(i, v)
+					}
 				} else {
 					%key%%k% := v
 				}

@@ -448,8 +448,8 @@ ChangeDesktopName(hk:="") {
     currentDesktopNumber := _GetCurrentDesktopNumber()
     currentDesktopName := _GetDesktopName(currentDesktopNumber)
     newDesktopName := InputBox(Format(changeDesktopNamesPopupText, _GetCurrentDesktopNumber()), changeDesktopNamesPopupTitle, "", currentDesktopName)
-    if (newDesktopName["Result"] == "OK") {
-        _SetDesktopName(currentDesktopNumber, newDesktopName["Value"])
+    if (newDesktopName.Result == "OK") {
+        _SetDesktopName(currentDesktopNumber, newDesktopName.Value)
     }
     _ChangeAppearance(currentDesktopNumber)
 }
