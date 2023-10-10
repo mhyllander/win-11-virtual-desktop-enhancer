@@ -646,11 +646,11 @@ _ChangeAppearance(n:=1) {
 
 HideTrayTip() {
     TrayTip  ; Attempt to hide it the normal way.
-    if SubStr(A_OSVersion,1,3) = "10." {
-        A_IconHidden := true
-        Sleep 200  ; It may be necessary to adjust this sleep.
-        A_IconHidden := false
-    }
+    ; if SubStr(A_OSVersion,1,3) = "10." {
+    ;     A_IconHidden := true
+    ;     Sleep 200  ; It may be necessary to adjust this sleep.
+    ;     A_IconHidden := false
+    ; }
 }
 
 ; Only give focus to the foremost window if it has been requested.
