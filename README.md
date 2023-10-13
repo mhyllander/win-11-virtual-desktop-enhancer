@@ -1,6 +1,12 @@
 # Windows 11 Virtual Desktop Enhancer
 
-Fork of [sdias/win-10-virtual-desktop-enhancer](https://github.com/sdias/win-10-virtual-desktop-enhancer) for Windows 11 support.
+Fork of [sdias/win-10-virtual-desktop-enhancer](https://github.com/sdias/win-10-virtual-desktop-enhancer).
+
+## Fork info
+
+* Updated the VirtualDesktopAccessor.dll library with the latest release from [Ciantic/VirtualDesktopAccessor](https://github.com/Ciantic/VirtualDesktopAccessor).
+* Ported to AutoHotKey v2 with some internal improvements.
+* Added [General]/TrayTip setting.
 
 ## Introduction
 
