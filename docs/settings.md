@@ -46,6 +46,7 @@ The main settings are found in the `[General]` section of the `settings.ini` fil
 | TaskbarScrollSwitching                         | If scrolling over the taskbar will switch desktops.                                                                | `1`, `0` (Meaning YES and NO respectively) |
 | UseNativePrevNextDesktopSwitchingIfConflicting | Whether to switch between desktops instantly or with the default Windows transition if the shortcuts conflict.     | `1`, `0` (Meaning YES and NO respectively) |
 | DesktopWrapping                                | If going right from the last desktop should take you to the first one and vice-versa.                              | `1`, `0` (Meaning YES and NO respectively) |
+| TrayTip                                | If the tray toaster should be displayed or not.                              | `1`, `0` (Meaning YES and NO respectively) |
 
 ## Custom wallpapers
 

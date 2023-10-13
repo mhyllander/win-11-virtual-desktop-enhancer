@@ -1,10 +1,16 @@
-# Windows 10 Virtual Desktop Enhancer
+# Windows 11 Virtual Desktop Enhancer
 
-**Warning:** I am officially no longer maintaining this project due to lack of time and interest. Thanks for using it and for all of your work towards helping me improve it. -sdias
+Fork of [sdias/win-10-virtual-desktop-enhancer](https://github.com/sdias/win-10-virtual-desktop-enhancer).
+
+## Fork info
+
+* Updated the VirtualDesktopAccessor.dll library with the latest release from [Ciantic/VirtualDesktopAccessor](https://github.com/Ciantic/VirtualDesktopAccessor).
+* Ported to AutoHotKey v2 with some internal improvements.
+* Added [General]/TrayTip setting.
 
 ## Introduction
 
-Windows 10 Virtual Desktop Enhancer is a [AutoHotkey](https://autohotkey.com/) script which adds some useful features to Windows 10 Virtual Desktops, like:
+Windows 11 Virtual Desktop Enhancer is a [AutoHotkey](https://autohotkey.com/) script which adds some useful features to Windows 11 Virtual Desktops, like:
 
 - Extra customizable keyboard shortcuts to switch or move a window to a different desktop
 - Customizable keyboard shortcuts to pin a window or a program to all desktops
@@ -22,17 +28,17 @@ Windows 10 Virtual Desktop Enhancer is a [AutoHotkey](https://autohotkey.com/) s
 
 ## Installation
 
-Windows 10 Virtual Desktop Enhancer is extremely easy to install: you just have to download and extract the latest version of the script.
+Windows 11 Virtual Desktop Enhancer is extremely easy to install: you just have to download and extract the latest version of the script.
 
 Please read [the installation page](docs/installation.md) for more detailed instructions.
 
 ## Customization
 
-Windows 10 Virtual Desktop Enhancer is built to be customizable and to adapt to your needs: learn how to personalize your experience [here](docs/settings.md).
+Windows 11 Virtual Desktop Enhancer is built to be customizable and to adapt to your needs: learn how to personalize your experience [here](docs/settings.md).
 
 ## License
 
-Windows 10 Virtual Desktop Enhancer is licensed under the [MIT license](https://github.com/sdias/win-10-virtual-desktop-enhancer/blob/master/LICENSE).  
+Windows 11 Virtual Desktop Enhancer is licensed under the [MIT license](https://github.com/mhyllander/win-11-virtual-desktop-enhancer/blob/master/LICENSE).
 This means you are free to modify and redistribute this program as you wish, but you must include the license and this notice in your version.
 
 ## Credits

@@ -1,43 +1,64 @@
-#SingleInstance, force
-#WinActivateForce
-#HotkeyInterval 20
-#MaxHotkeysPerInterval 20000
-#MenuMaskKey vk07
-#UseHook
-; Credits to Ciantic: https://github.com/Ciantic/VirtualDesktopAccessor
+; The base path is relative to Ahk2Exe.exe
+;@Ahk2Exe-Base ..\v2\AutoHotkey64.exe
+#Requires AutoHotkey v2.0
 
-#Include, %A_ScriptDir%\libraries\read-ini.ahk
-#Include, %A_ScriptDir%\libraries\tooltip.ahk
+#SingleInstance force
+#WinActivateForce
+#UseHook
+
+SetWorkingDir(A_ScriptDir)
+ListLines(False)
+SetWinDelay(0)
+SetControlDelay(0)
+ProcessSetPriority("H")
+
+A_HotkeyInterval := 20
+A_MaxHotkeysPerInterval := 20000
+A_MenuMaskKey := "vk07"
+
+#Include "%A_ScriptDir%\libraries\read-ini.ahk"
+#Include "%A_ScriptDir%\libraries\tooltip.ahk"
 
 ; ======================================================================
 ; Set Up Library Hooks
 ; ======================================================================
 
-DetectHiddenWindows, On
-hwnd := WinExist("ahk_pid " . DllCall("GetCurrentProcessId","Uint"))
-hwnd += 0x1000 << 32
+; Credits to Ciantic: https://github.com/Ciantic/VirtualDesktopAccessor
 
-hVirtualDesktopAccessor := DllCall("LoadLibrary", "Str", A_ScriptDir . "\libraries\virtual-desktop-accessor.dll", "Ptr")
+; Path to the DLL, relative to the script
+VDA_PATH := "libraries\VirtualDesktopAccessor.dll"
+hVirtualDesktopAccessor := DllCall("LoadLibrary", "Str", VDA_PATH, "Ptr")
 
-global GoToDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "GoToDesktopNumber", "Ptr")
-global RegisterPostMessageHookProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "RegisterPostMessageHook", "Ptr")
-global UnregisterPostMessageHookProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "UnregisterPostMessageHook", "Ptr")
-global GetCurrentDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "GetCurrentDesktopNumber", "Ptr")
-global GetDesktopCountProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "GetDesktopCount", "Ptr")
-global IsWindowOnDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsWindowOnDesktopNumber", "Ptr")
-global MoveWindowToDesktopNumberProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "MoveWindowToDesktopNumber", "Ptr")
-global IsPinnedWindowProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsPinnedWindow", "Ptr")
-global PinWindowProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "PinWindow", "Ptr")
-global UnPinWindowProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "UnPinWindow", "Ptr")
-global IsPinnedAppProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "IsPinnedApp", "Ptr")
-global PinAppProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "PinApp", "Ptr")
-global UnPinAppProc := DllCall("GetProcAddress", Ptr, hVirtualDesktopAccessor, AStr, "UnPinApp", "Ptr")
+GetCurrentDesktopNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetCurrentDesktopNumber", "Ptr")
+GetDesktopCountProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetDesktopCount", "Ptr")
+GetDesktopIdByNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetDesktopIdByNumber", "Ptr")
+GetDesktopNumberByIdProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetDesktopNumberById", "Ptr")
+GetWindowDesktopIdProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetWindowDesktopId", "Ptr")
+GetWindowDesktopNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetWindowDesktopNumber", "Ptr")
+IsWindowOnCurrentVirtualDesktopProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "IsWindowOnCurrentVirtualDesktop", "Ptr")
+MoveWindowToDesktopNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "MoveWindowToDesktopNumber", "Ptr")
+GoToDesktopNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GoToDesktopNumber", "Ptr")
+SetDesktopNameProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "SetDesktopName", "Ptr")
+GetDesktopNameProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "GetDesktopName", "Ptr")
+IsPinnedWindowProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "IsPinnedWindow", "Ptr")
+PinWindowProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "PinWindow", "Ptr")
+UnPinWindowProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "UnPinWindow", "Ptr")
+IsPinnedAppProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "IsPinnedApp", "Ptr")
+PinAppProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "PinApp", "Ptr")
+UnPinAppProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "UnPinApp", "Ptr")
+IsWindowOnDesktopNumberProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "IsWindowOnDesktopNumber", "Ptr")
+CreateDesktopProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "CreateDesktop", "Ptr")
+RemoveDesktopProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "RemoveDesktop", "Ptr")
 
-DllCall(RegisterPostMessageHookProc, Int, hwnd, Int, 0x1400 + 30)
-OnMessage(0x1400 + 30, "VWMess")
+; On change listeners
+RegisterPostMessageHookProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "RegisterPostMessageHook", "Ptr")
+UnregisterPostMessageHookProc := DllCall("GetProcAddress", "Ptr", hVirtualDesktopAccessor, "AStr", "UnregisterPostMessageHook", "Ptr")
+
 VWMess(wParam, lParam, msg, hwnd) {
     OnDesktopSwitch(lParam + 1)
 }
+OnMessage(0x1400 + 30, VWMess)
+DllCall(RegisterPostMessageHookProc, "Ptr", A_ScriptHwnd, "Int", 0x1400 + 30, "Int")
 
 ; ======================================================================
 ; Auto Execute
@@ -45,40 +66,90 @@ VWMess(wParam, lParam, msg, hwnd) {
 
 ; Set up tray tray menu
 
-Menu, Tray, NoStandard
-Menu, Tray, Add, &Manage Desktops, OpenDesktopManager
-Menu, Tray, Default, &Manage Desktops
-Menu, Tray, Add, Reload Settings, Reload
-Menu, Tray, Add, Exit, Exit
-Menu, Tray, Click, 1
+A_TrayMenu.Delete()
+A_TrayMenu.Add("&Manage Desktops", hOpenDesktopManager)
+A_TrayMenu.Add("Reload Settings", hReload)
+A_TrayMenu.Add("Exit", hExit)
+A_TrayMenu.Default := "&Manage Desktops"
+A_TrayMenu.ClickCount := 1
+
+hOpenDesktopManager(ItemName, ItemPos, MyMenu) {
+    OpenDesktopManager
+}
+
+hReload(ItemName, ItemPos, MyMenu) {
+    Reload
+}
+
+hExit(ItemName, ItemPos, MyMenu) {
+    ExitApp
+}
 
 ; Read and groom settings
 
+; Initialize some settings (global variables)
+; [KeyboardShortcutsCombinations]
+KeyboardShortcutsCombinationsPinWindow := ""
+KeyboardShortcutsCombinationsUnpinWindow := ""
+KeyboardShortcutsCombinationsTogglePinWindow := ""
+KeyboardShortcutsCombinationsPinApp := ""
+KeyboardShortcutsCombinationsUnpinApp := ""
+KeyboardShortcutsCombinationsTogglePinApp := ""
+KeyboardShortcutsCombinationsOpenDesktopManager := ""
+KeyboardShortcutsCombinationsChangeDesktopName := ""
+; [KeyboardShortcutsIdentifiers]
+KeyboardShortcutsIdentifiersDesktop := []
+KeyboardShortcutsIdentifiersDesktopAlt := []
+; [KeyboardShortcutsModifiers]
+KeyboardShortcutsModifiersSwitchDesktop := ""
+KeyboardShortcutsModifiersMoveWindowToDesktop := ""
+KeyboardShortcutsModifiersMoveWindowAndSwitchToDesktop := ""
+KeyboardShortcutsModifiersNextTenDesktops := ""
+; [KeyboardShortcutsIdentifiers]
+KeyboardShortcutsIdentifiersPreviousDesktop := ""
+KeyboardShortcutsIdentifiersNextDesktop := ""
+; [Wallpapers]
+Wallpapers := []
+; [DesktopNames]
+DesktopNames := []
+; [RunProgramWhenSwitchingToDesktop]
+RunProgramWhenSwitchingToDesktop := []
+; [RunProgramWhenSwitchingFromDesktop]
+RunProgramWhenSwitchingFromDesktop := []
+
+; Read the settings.ini file
 ReadIni("settings.ini")
 
-global GeneralDesktopWrapping := (GeneralDesktopWrapping != "" and GeneralDesktopWrapping ~= "^[01]$") ? GeneralDesktopWrapping : 1
-global TooltipsEnabled := (TooltipsEnabled != "" and TooltipsEnabled ~= "^[01]$") ? TooltipsEnabled : 1
-global TooltipsLifespan := (TooltipsLifespan != "" and TooltipsLifespan ~= "^\d+$") ? TooltipsLifespan : 750
-global TooltipsFadeOutAnimationDuration := (TooltipsFadeOutAnimationDuration != "" and TooltipsFadeOutAnimationDuration ~= "^\d+$") ? TooltipsFadeOutAnimationDuration : 100
-global TooltipsPositionX := (TooltipsPositionX == "LEFT" or TooltipsPositionX == "CENTER" or TooltipsPositionX == "RIGHT") ? TooltipsPositionX : "CENTER"
-global TooltipsPositionY := (TooltipsPositionY == "TOP" or TooltipsPositionY == "CENTER" or TooltipsPositionY == "BOTTOM") ? TooltipsPositionY : "CENTER"
-global TooltipsOnEveryMonitor := (TooltipsOnEveryMonitor != "" and TooltipsOnEveryMonitor ~= "^[01]$") ? TooltipsOnEveryMonitor : 1
-global TooltipsFontSize := (TooltipsFontSize != "" and TooltipsFontSize ~= "^\d+$") ? TooltipsFontSize : 11
-global TooltipsFontInBold := (TooltipsFontInBold != "" and TooltipsFontInBold ~= "^[01]$") ? (TooltipsFontInBold ? 700 : 400) : 700
-global TooltipsFontColor := (TooltipsFontColor != "" and TooltipsFontColor ~= "^0x[0-9A-Fa-f]{1,6}$") ? TooltipsFontColor : "0xFFFFFF"
-global TooltipsBackgroundColor := (TooltipsBackgroundColor != "" and TooltipsBackgroundColor ~= "^0x[0-9A-Fa-f]{1,6}$") ? TooltipsBackgroundColor : "0x1F1F1F"
-global GeneralUseNativePrevNextDesktopSwitchingIfConflicting := (GeneralUseNativePrevNextDesktopSwitchingIfConflicting ~= "^[01]$" && GeneralUseNativePrevNextDesktopSwitchingIfConflicting == "1" ? true : false)
+; Check and parse some settings (global variables)
+; [General]
+GeneralDefaultDesktop := (GeneralDefaultDesktop != "" and GeneralDefaultDesktop ~= "^[0-9]+$") ? Integer(GeneralDefaultDesktop) : 1
+GeneralTaskbarScrollSwitching := (GeneralTaskbarScrollSwitching != "" and GeneralTaskbarScrollSwitching ~= "^[01]$") ? Integer(GeneralTaskbarScrollSwitching) : 1
+GeneralUseNativePrevNextDesktopSwitchingIfConflicting := (GeneralUseNativePrevNextDesktopSwitchingIfConflicting ~= "^[01]$" && GeneralUseNativePrevNextDesktopSwitchingIfConflicting == "1" ? true : false)
+GeneralDesktopWrapping := (GeneralDesktopWrapping != "" and GeneralDesktopWrapping ~= "^[01]$") ? Integer(GeneralDesktopWrapping) : 1
+GeneralTrayTip := (GeneralTrayTip != "" and GeneralTrayTip ~= "^[01]$") ? Integer(GeneralTrayTip) : 1
+; [ToolTips]
+TooltipsEnabled := (TooltipsEnabled != "" and TooltipsEnabled ~= "^[01]$") ? Integer(TooltipsEnabled) : 1
+TooltipsPositionX := (TooltipsPositionX == "LEFT" or TooltipsPositionX == "CENTER" or TooltipsPositionX == "RIGHT") ? TooltipsPositionX : "CENTER"
+TooltipsPositionY := (TooltipsPositionY == "TOP" or TooltipsPositionY == "CENTER" or TooltipsPositionY == "BOTTOM") ? TooltipsPositionY : "CENTER"
+TooltipsFontSize := (TooltipsFontSize != "" and TooltipsFontSize ~= "^\d+$") ? Integer(TooltipsFontSize) : 11
+TooltipsFontColor := (TooltipsFontColor != "" and TooltipsFontColor ~= "^0x[0-9A-Fa-f]{1,6}$") ? TooltipsFontColor : "0xFFFFFF"
+TooltipsFontInBold := (TooltipsFontInBold != "" and TooltipsFontInBold ~= "^[01]$") ? (TooltipsFontInBold ? 700 : 400) : 700
+TooltipsBackgroundColor := (TooltipsBackgroundColor != "" and TooltipsBackgroundColor ~= "^0x[0-9A-Fa-f]{1,6}$") ? TooltipsBackgroundColor : "0x1F1F1F"
+TooltipsLifespan := (TooltipsLifespan != "" and TooltipsLifespan ~= "^\d+$") ? Integer(TooltipsLifespan) : 750
+TooltipsFadeOutAnimationDuration := (TooltipsFadeOutAnimationDuration != "" and TooltipsFadeOutAnimationDuration ~= "^\d+$") ? Integer(TooltipsFadeOutAnimationDuration) : 100
+TooltipsOnEveryMonitor := (TooltipsOnEveryMonitor != "" and TooltipsOnEveryMonitor ~= "^[01]$") ? Integer(TooltipsOnEveryMonitor) : 1
+
 
 ; Initialize
 
-global taskbarPrimaryID=0
-global taskbarSecondaryID=0
-global previousDesktopNo=0
-global doFocusAfterNextSwitch=0
-global hasSwitchedDesktopsBefore=1
+taskbarPrimaryID := 0
+taskbarSecondaryID := 0
+previousDesktopNo := 0
+doFocusAfterNextSwitch := 0
+; hasSwitchedDesktopsBefore := 1
 
-global changeDesktopNamesPopupTitle := "Windows 10 Virtual Desktop Enhancer"
-global changeDesktopNamesPopupText :=  "Change the desktop name of desktop #{:d}"
+changeDesktopNamesPopupTitle := "Windows 11 Virtual Desktop Enhancer"
+changeDesktopNamesPopupText :=  "Change the desktop name of desktop #{:d}"
 
 initialDesktopNo := _GetCurrentDesktopNumber()
 
@@ -107,182 +178,185 @@ hkComboPinApp              := KeyboardShortcutsCombinationsPinApp
 hkComboUnpinApp            := KeyboardShortcutsCombinationsUnpinApp
 hkComboTogglePinApp        := KeyboardShortcutsCombinationsTogglePinApp
 hkComboOpenDesktopManager  := KeyboardShortcutsCombinationsOpenDesktopManager
-hkComboChangeDesktopName     := KeyboardShortcutsCombinationsChangeDesktopName
+hkComboChangeDesktopName   := KeyboardShortcutsCombinationsChangeDesktopName
 
-arrayS := Object(),                     arrayR := Object()
-arrayS.Insert("\s*|,"),                 arrayR.Insert("")
-arrayS.Insert("L(Ctrl|Shift|Alt|Win)"), arrayR.Insert("<$1")
-arrayS.Insert("R(Ctrl|Shift|Alt|Win)"), arrayR.Insert(">$1")
-arrayS.Insert("Ctrl"),                  arrayR.Insert("^")
-arrayS.Insert("Shift"),                 arrayR.Insert("+")
-arrayS.Insert("Alt"),                   arrayR.Insert("!")
-arrayS.Insert("Win"),                   arrayR.Insert("#")
+arrayS := Array(),                    arrayR := Array()
+arrayS.Push("\s*|,"),                 arrayR.Push("")
+arrayS.Push("L(Ctrl|Shift|Alt|Win)"), arrayR.Push("<$1")
+arrayS.Push("R(Ctrl|Shift|Alt|Win)"), arrayR.Push(">$1")
+arrayS.Push("Ctrl"),                  arrayR.Push("^")
+arrayS.Push("Shift"),                 arrayR.Push("+")
+arrayS.Push("Alt"),                   arrayR.Push("!")
+arrayS.Push("Win"),                   arrayR.Push("#")
 
-for index in arrayS {
-    hkModifiersSwitch         := RegExReplace(hkModifiersSwitch, arrayS[index], arrayR[index])
-    hkModifiersMove           := RegExReplace(hkModifiersMove, arrayS[index], arrayR[index])
-    hkModifiersMoveAndSwitch  := RegExReplace(hkModifiersMoveAndSwitch, arrayS[index], arrayR[index])
-    hkModifiersPlusTen        := RegExReplace(hkModifiersPlusTen, arrayS[index], arrayR[index])
-    hkComboPinWin             := RegExReplace(hkComboPinWin, arrayS[index], arrayR[index])
-    hkComboUnpinWin           := RegExReplace(hkComboUnpinWin, arrayS[index], arrayR[index])
-    hkComboTogglePinWin       := RegExReplace(hkComboTogglePinWin, arrayS[index], arrayR[index])
-    hkComboPinApp             := RegExReplace(hkComboPinApp, arrayS[index], arrayR[index])
-    hkComboUnpinApp           := RegExReplace(hkComboUnpinApp, arrayS[index], arrayR[index])
-    hkComboTogglePinApp       := RegExReplace(hkComboTogglePinApp, arrayS[index], arrayR[index])
-    hkComboOpenDesktopManager := RegExReplace(hkComboOpenDesktopManager, arrayS[index], arrayR[index])
-    hkComboChangeDesktopName    := RegExReplace(hkComboChangeDesktopName, arrayS[index], arrayR[index])    
+Loop arrayS.Length {
+    hkModifiersSwitch         := RegExReplace(hkModifiersSwitch, arrayS[A_Index], arrayR[A_Index])
+    hkModifiersMove           := RegExReplace(hkModifiersMove, arrayS[A_Index], arrayR[A_Index])
+    hkModifiersMoveAndSwitch  := RegExReplace(hkModifiersMoveAndSwitch, arrayS[A_Index], arrayR[A_Index])
+    hkModifiersPlusTen        := RegExReplace(hkModifiersPlusTen, arrayS[A_Index], arrayR[A_Index])
+    hkComboPinWin             := RegExReplace(hkComboPinWin, arrayS[A_Index], arrayR[A_Index])
+    hkComboUnpinWin           := RegExReplace(hkComboUnpinWin, arrayS[A_Index], arrayR[A_Index])
+    hkComboTogglePinWin       := RegExReplace(hkComboTogglePinWin, arrayS[A_Index], arrayR[A_Index])
+    hkComboPinApp             := RegExReplace(hkComboPinApp, arrayS[A_Index], arrayR[A_Index])
+    hkComboUnpinApp           := RegExReplace(hkComboUnpinApp, arrayS[A_Index], arrayR[A_Index])
+    hkComboTogglePinApp       := RegExReplace(hkComboTogglePinApp, arrayS[A_Index], arrayR[A_Index])
+    hkComboOpenDesktopManager := RegExReplace(hkComboOpenDesktopManager, arrayS[A_Index], arrayR[A_Index])
+    hkComboChangeDesktopName  := RegExReplace(hkComboChangeDesktopName, arrayS[A_Index], arrayR[A_Index])    
 }
 
 ; Setup key bindings dynamically
 ;  If they are set incorrectly in the settings, an error will be thrown.
 
 setUpHotkey(hk, handler, settingPaths) {
-    Hotkey, %hk%, %handler%, UseErrorLevel
-    if (ErrorLevel <> 0) {
-        MsgBox, 16, Error, One or more keyboard shortcut settings have been defined incorrectly in the settings file: `n%settingPaths%. `n`nPlease read the README for instructions.
-        Exit
+    try
+        Hotkey hk, handler
+    catch as ex
+    {
+        MsgBox "One or more keyboard shortcut settings have been defined incorrectly in the settings file: `n" . settingPaths . ". `n`nPlease read the README for instructions.`n`n" . ex.Message, "Error"
+        Exit()
     }
 }
 
 setUpHotkeyWithOneSetOfModifiersAndIdentifier(modifiers, identifier, handler, settingPaths) {
-    modifiers <> "" && identifier <> "" ? setUpHotkey(modifiers . identifier, handler, settingPaths) :
+    (modifiers != "" && identifier != "") ? setUpHotkey(modifiers . identifier, handler, settingPaths) : ""
 }
 
 setUpHotkeyWithTwoSetOfModifiersAndIdentifier(modifiersA, modifiersB, identifier, handler, settingPaths) {
-    modifiersA <> "" && modifiersB <> "" && identifier <> "" ? setUpHotkey(modifiersA . modifiersB . identifier, handler, settingPaths) :
+    (modifiersA != "" && modifiersB != "" && identifier != "") ? setUpHotkey(modifiersA . modifiersB . identifier, handler, settingPaths) : ""
 }
 
 setUpHotkeyWithCombo(combo, handler, settingPaths) {
-    combo <> "" ? setUpHotkey(combo, handler, settingPaths) :
+    (combo != "") ? setUpHotkey(combo, handler, settingPaths) : ""
 }
 
-i := 0
-while (i < 10) {
-    hkDesktopI0 := KeyboardShortcutsIdentifiersDesktop%i%
-    hkDesktopI1 := KeyboardShortcutsIdentifiersDesktopAlt%i%
-    j := 0
-    while (j < 2) {
-        hkDesktopI := hkDesktopI%j%
-        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkDesktopI, "OnShiftNumberedPress", "[KeyboardShortcutsModifiers] SwitchDesktop")
-        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkDesktopI, "OnMoveNumberedPress", "[KeyboardShortcutsModifiers] MoveWindowToDesktop")
-        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkDesktopI, "OnMoveAndShiftNumberedPress", "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop")
-        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersSwitch, hkModifiersPlusTen, hkDesktopI, "OnShiftNumberedPressNextTen", "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
-        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersMove, hkModifiersPlusTen, hkDesktopI, "OnMoveNumberedPressNextTen", "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
-        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkModifiersPlusTen, hkDesktopI, "OnMoveAndShiftNumberedPressNextTen", "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
-        j := j + 1
+hkDesktopId := ["", ""]
+i := 1
+while (i <= KeyboardShortcutsIdentifiersDesktop.Length) {
+    hkDesktopId[1] := KeyboardShortcutsIdentifiersDesktop[i]
+    hkDesktopId[2] := KeyboardShortcutsIdentifiersDesktopAlt[i]
+    j := 1
+    while (j <= 2) {
+        hkDesktopI := hkDesktopId[j]
+        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkDesktopI, OnShiftNumberedPress, "[KeyboardShortcutsModifiers] SwitchDesktop")
+        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkDesktopI, OnMoveNumberedPress, "[KeyboardShortcutsModifiers] MoveWindowToDesktop")
+        setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkDesktopI, OnMoveAndShiftNumberedPress, "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop")
+        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersSwitch, hkModifiersPlusTen, hkDesktopI, OnShiftNumberedPressNextTen, "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
+        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersMove, hkModifiersPlusTen, hkDesktopI, OnMoveNumberedPressNextTen, "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
+        setUpHotkeyWithTwoSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkModifiersPlusTen, hkDesktopI, OnMoveAndShiftNumberedPressNextTen, "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsModifiers] NextTenDesktops")
+        j++
     }
-    i := i + 1
+    i++
 }
 
 if (!(GeneralUseNativePrevNextDesktopSwitchingIfConflicting && _IsPrevNextDesktopSwitchingKeyboardShortcutConflicting(hkModifiersSwitch, hkIdentifierPrevious))) {
-    setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkIdentifierPrevious, "OnShiftLeftPress", "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
+    setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkIdentifierPrevious, OnShiftLeftPress, "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
 }
 if (!(GeneralUseNativePrevNextDesktopSwitchingIfConflicting && _IsPrevNextDesktopSwitchingKeyboardShortcutConflicting(hkModifiersSwitch, hkIdentifierNext))) {
-    setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkIdentifierNext, "OnShiftRightPress", "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
+    setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersSwitch, hkIdentifierNext, OnShiftRightPress, "[KeyboardShortcutsModifiers] SwitchDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
 }
 
-setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkIdentifierPrevious, "OnMoveLeftPress", "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
-setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkIdentifierNext, "OnMoveRightPress", "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
+setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkIdentifierPrevious, OnMoveLeftPress, "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
+setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMove, hkIdentifierNext, OnMoveRightPress, "[KeyboardShortcutsModifiers] MoveWindowToDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
 
-setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkIdentifierPrevious, "OnMoveAndShiftLeftPress", "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
-setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkIdentifierNext, "OnMoveAndShiftRightPress", "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
+setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkIdentifierPrevious, OnMoveAndShiftLeftPress, "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsIdentifiers] PreviousDesktop")
+setUpHotkeyWithOneSetOfModifiersAndIdentifier(hkModifiersMoveAndSwitch, hkIdentifierNext, OnMoveAndShiftRightPress, "[KeyboardShortcutsModifiers] MoveWindowAndSwitchToDesktop, [KeyboardShortcutsIdentifiers] NextDesktop")
 
-setUpHotkeyWithCombo(hkComboPinWin, "OnPinWindowPress", "[KeyboardShortcutsCombinations] PinWindow")
-setUpHotkeyWithCombo(hkComboUnpinWin, "OnUnpinWindowPress", "[KeyboardShortcutsCombinations] UnpinWindow")
-setUpHotkeyWithCombo(hkComboTogglePinWin, "OnTogglePinWindowPress", "[KeyboardShortcutsCombinations] TogglePinWindow")
+setUpHotkeyWithCombo(hkComboPinWin, OnPinWindowPress, "[KeyboardShortcutsCombinations] PinWindow")
+setUpHotkeyWithCombo(hkComboUnpinWin, OnUnpinWindowPress, "[KeyboardShortcutsCombinations] UnpinWindow")
+setUpHotkeyWithCombo(hkComboTogglePinWin, OnTogglePinWindowPress, "[KeyboardShortcutsCombinations] TogglePinWindow")
 
-setUpHotkeyWithCombo(hkComboPinApp, "OnPinAppPress", "[KeyboardShortcutsCombinations] PinApp")
-setUpHotkeyWithCombo(hkComboUnpinApp, "OnUnpinAppPress", "[KeyboardShortcutsCombinations] UnpinApp")
-setUpHotkeyWithCombo(hkComboTogglePinApp, "OnTogglePinAppPress", "[KeyboardShortcutsCombinations] TogglePinApp")
+setUpHotkeyWithCombo(hkComboPinApp, OnPinAppPress, "[KeyboardShortcutsCombinations] PinApp")
+setUpHotkeyWithCombo(hkComboUnpinApp, OnUnpinAppPress, "[KeyboardShortcutsCombinations] UnpinApp")
+setUpHotkeyWithCombo(hkComboTogglePinApp, OnTogglePinAppPress, "[KeyboardShortcutsCombinations] TogglePinApp")
 
-setUpHotkeyWithCombo(hkComboOpenDesktopManager, "OpenDesktopManager", "[KeyboardShortcutsCombinations] OpenDesktopManager")
+setUpHotkeyWithCombo(hkComboOpenDesktopManager, OpenDesktopManager, "[KeyboardShortcutsCombinations] OpenDesktopManager")
 
-setUpHotkeyWithCombo(hkComboChangeDesktopName, "ChangeDesktopName", "[KeyboardShortcutsCombinations] ChangeDesktopName")
+setUpHotkeyWithCombo(hkComboChangeDesktopName, ChangeDesktopName, "[KeyboardShortcutsCombinations] ChangeDesktopName")
 
 if (GeneralTaskbarScrollSwitching) {
-    Hotkey, ~WheelUp, OnTaskbarScrollUp
-    Hotkey, ~WheelDown, OnTaskbarScrollDown
+    Hotkey "~WheelUp", OnTaskbarScrollUp
+    Hotkey "~WheelDown", OnTaskbarScrollDown
 }
 
 ; ======================================================================
 ; Event Handlers
 ; ======================================================================
 
-OnShiftNumberedPress() {
-    SwitchToDesktop(substr(A_ThisHotkey, 0, 1))
+OnShiftNumberedPress(hk:="") {
+    SwitchToDesktop(substr(hk, -1, 1))
 }
 
-OnShiftNumberedPressNextTen() {
-    SwitchToDesktop(1 . substr(A_ThisHotkey, 0, 1))
+OnShiftNumberedPressNextTen(hk:="") {
+    SwitchToDesktop("1" . substr(hk, -1, 1))
 }
 
-OnMoveNumberedPress() {
-    MoveToDesktop(substr(A_ThisHotkey, 0, 1))
+OnMoveNumberedPress(hk:="") {
+    MoveToDesktop(substr(hk, -1, 1))
 }
 
-OnMoveNumberedPressNextTen() {
-    MoveToDesktop(1 . substr(A_ThisHotkey, 0, 1))
+OnMoveNumberedPressNextTen(hk:="") {
+    MoveToDesktop("1" . substr(hk, -1, 1))
 }
 
-OnMoveAndShiftNumberedPress() {
-    MoveAndSwitchToDesktop(substr(A_ThisHotkey, 0, 1))
+OnMoveAndShiftNumberedPress(hk:="") {
+    MoveAndSwitchToDesktop(substr(hk, -1, 1))
 }
 
-OnMoveAndShiftNumberedPressNextTen() {
-    MoveAndSwitchToDesktop(1 . substr(A_ThisHotkey, 0, 1))
+OnMoveAndShiftNumberedPressNextTen(hk:="") {
+    MoveAndSwitchToDesktop("1" . substr(hk, -1, 1))
 }
 
-OnShiftLeftPress() {
+OnShiftLeftPress(hk:="") {
     SwitchToDesktop(_GetPreviousDesktopNumber())
 }
 
-OnShiftRightPress() {
+OnShiftRightPress(hk:="") {
     SwitchToDesktop(_GetNextDesktopNumber())
 }
 
-OnMoveLeftPress() {
+OnMoveLeftPress(hk:="") {
     MoveToDesktop(_GetPreviousDesktopNumber())
 }
 
-OnMoveRightPress() {
+OnMoveRightPress(hk:="") {
     MoveToDesktop(_GetNextDesktopNumber())
 }
 
-OnMoveAndShiftLeftPress() {
+OnMoveAndShiftLeftPress(hk:="") {
     MoveAndSwitchToDesktop(_GetPreviousDesktopNumber())
 }
 
-OnMoveAndShiftRightPress() {
+OnMoveAndShiftRightPress(hk:="") {
     MoveAndSwitchToDesktop(_GetNextDesktopNumber())
 }
 
-OnTaskbarScrollUp() {
+OnTaskbarScrollUp(hk:="") {
     if (_IsCursorHoveringTaskbar()) {
-        OnShiftLeftPress()
+        OnShiftLeftPress(hk)
     }
 }
 
-OnTaskbarScrollDown() {
+OnTaskbarScrollDown(hk:="") {
     if (_IsCursorHoveringTaskbar()) {
-        OnShiftRightPress()
+        OnShiftRightPress(hk)
     }
 }
 
-OnPinWindowPress() {
+OnPinWindowPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     _PinWindow(windowID)
     _ShowTooltipForPinnedWindow(windowTitle)
 }
 
-OnUnpinWindowPress() {
+OnUnpinWindowPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     _UnpinWindow(windowID)
     _ShowTooltipForUnpinnedWindow(windowTitle)
 }
 
-OnTogglePinWindowPress() {
+OnTogglePinWindowPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     if (_GetIsWindowPinned(windowID)) {
@@ -295,21 +369,21 @@ OnTogglePinWindowPress() {
     }
 }
 
-OnPinAppPress() {
+OnPinAppPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     _PinApp()
     _ShowTooltipForPinnedApp(windowTitle)
 }
 
-OnUnpinAppPress() {
+OnUnpinAppPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     _UnpinApp()
     _ShowTooltipForUnpinnedApp(windowTitle)
 }
 
-OnTogglePinAppPress() {
+OnTogglePinAppPress(hk:="") {
     windowID := _GetCurrentWindowID()
     windowTitle := _GetCurrentWindowTitle()
     if (_GetIsAppPinned(windowID)) {
@@ -325,6 +399,7 @@ OnTogglePinAppPress() {
 OnDesktopSwitch(n:=1) {
     ; Give focus first, then display the popup, otherwise the popup could
     ; steal the focus from the legitimate window until it disappears.
+    global previousDesktopNo
     _FocusIfRequested()
     if (TooltipsEnabled) {
         _ShowTooltipForDesktopSwitch(n)
@@ -344,7 +419,8 @@ OnDesktopSwitch(n:=1) {
 ; ======================================================================
 
 SwitchToDesktop(n:=1) {
-    doFocusAfterNextSwitch=1
+    global doFocusAfterNextSwitch
+    doFocusAfterNextSwitch := 1
     _ChangeDesktop(n)
 }
 
@@ -354,36 +430,28 @@ MoveToDesktop(n:=1) {
 }
 
 MoveAndSwitchToDesktop(n:=1) {
-    doFocusAfterNextSwitch=1
+    global doFocusAfterNextSwitch
+    doFocusAfterNextSwitch := 1
     _MoveCurrentWindowToDesktop(n)
     _ChangeDesktop(n)
 }
 
-OpenDesktopManager() {
-    Send #{Tab}
+OpenDesktopManager(hk:="") {
+    Send A_Tab
 }
 
 ; Let the user change desktop names with a prompt, without having to edit the 'settings.ini'
 ; file and reload the program.
 ; The changes are temprorary (names will be overwritten by the default values of
 ; 'settings.ini' when the program will be restarted.
-ChangeDesktopName() {
+ChangeDesktopName(hk:="") {
     currentDesktopNumber := _GetCurrentDesktopNumber()
     currentDesktopName := _GetDesktopName(currentDesktopNumber)
-    InputBox, newDesktopName, % changeDesktopNamesPopupTitle, % Format(changeDesktopNamesPopupText, _GetCurrentDesktopNumber()), , , , , , , , %currentDesktopName%
-    ; If the user choose "Cancel" ErrorLevel is set to 1.
-    if (ErrorLevel == 0) {
-        _SetDesktopName(currentDesktopNumber, newDesktopName)
+    newDesktopName := InputBox(Format(changeDesktopNamesPopupText, _GetCurrentDesktopNumber()), changeDesktopNamesPopupTitle, "", currentDesktopName)
+    if (newDesktopName.Result == "OK") {
+        _SetDesktopName(currentDesktopNumber, newDesktopName.Value)
     }
     _ChangeAppearance(currentDesktopNumber)
-}
-
-Reload() {
-    Reload
-}
-
-Exit() {
-    ExitApp
 }
 
 _IsPrevNextDesktopSwitchingKeyboardShortcutConflicting(hkModifiersSwitch, hkIdentifierNextOrPrevious) {
@@ -391,23 +459,24 @@ _IsPrevNextDesktopSwitchingKeyboardShortcutConflicting(hkModifiersSwitch, hkIden
 }
 
 _IsCursorHoveringTaskbar() {
-    MouseGetPos,,, mouseHoveringID
+    global taskbarPrimaryID, taskbarSecondaryID
+    MouseGetPos(,, &mouseHoveringID)
     if (!taskbarPrimaryID) {
-        WinGet, taskbarPrimaryID, ID, ahk_class Shell_TrayWnd
+        taskbarPrimaryID := WinGetID("ahk_class Shell_TrayWnd")
     }
     if (!taskbarSecondaryID) {
-        WinGet, taskbarSecondaryID, ID, ahk_class Shell_SecondaryTrayWnd
+        taskbarSecondaryID := WinGetID("ahk_class Shell_SecondaryTrayWnd")
     }
     return (mouseHoveringID == taskbarPrimaryID || mouseHoveringID == taskbarSecondaryID)
 }
 
 _GetCurrentWindowID() {
-    WinGet, activeHwnd, ID, A
+    activeHwnd := WinGetID("A")
     return activeHwnd
 }
 
 _GetCurrentWindowTitle() {
-    WinGetTitle, activeHwnd, A
+    activeHwnd := WinGetTitle("A")
     return activeHwnd
 }
 
@@ -419,7 +488,7 @@ _GetDesktopName(n:=1) {
     if (n == 0) {
         n := 10
     }
-    name := DesktopNames%n%
+    name := DesktopNames[n]
     if (!name) {
         name := "Desktop " . n
     }
@@ -433,9 +502,9 @@ _SetDesktopName(n:=1, name:=0) {
     }
     if (!name) {
         ; Default value: "Desktop N".
-        name := "Desktop " %n%
+        name := "Desktop " . n
     }
-    DesktopNames%n% := name
+    DesktopNames[n] := name
 }
 
 _GetNextDesktopNumber() {
@@ -461,30 +530,30 @@ _GetPreviousDesktopNumber() {
 }
 
 _GetCurrentDesktopNumber() {
-    return DllCall(GetCurrentDesktopNumberProc) + 1
+    return DllCall(GetCurrentDesktopNumberProc, "Int") + 1
 }
 
 _GetNumberOfDesktops() {
-    return DllCall(GetDesktopCountProc)
+    return DllCall(GetDesktopCountProc, "Int")
 }
 
 _MoveCurrentWindowToDesktop(n:=1) {
     activeHwnd := _GetCurrentWindowID()
-    DllCall(MoveWindowToDesktopNumberProc, UInt, activeHwnd, UInt, n-1)
+    DllCall(MoveWindowToDesktopNumberProc, "UInt", activeHwnd, "UInt", n-1)
 }
 
 _ChangeDesktop(n:=1) {
     if (n == 0) {
         n := 10
     }
-    DllCall(GoToDesktopNumberProc, Int, n-1)
+    DllCall(GoToDesktopNumberProc, "Int", n-1)
 }
 
 _CallWindowProc(proc, window:="") {
     if (window == "") {
         window := _GetCurrentWindowID()
     }
-    return DllCall(proc, UInt, window)
+    return DllCall(proc, "UInt", window)
 }
 
 _PinWindow(windowID:="") {
@@ -512,12 +581,12 @@ _GetIsAppPinned(windowID:="") {
 }
 
 _RunProgram(program:="", settingName:="") {
-    if (program <> "") {
+    if (program != "") {
         if (FileExist(program)) {
-            Run, % program
+            Run program
         }
         else {
-            MsgBox, 16, Error, The program "%program%" is not valid. `nPlease reconfigure the "%settingName%" setting. `n`nPlease read the README for instructions.
+            MsgBox 16, Error, "The program `"" . program . "`" is not valid. `nPlease reconfigure the `"" . settingName . "`" setting. `n`nPlease read the README for instructions."
         }
     }
 }
@@ -526,26 +595,26 @@ _RunProgramWhenSwitchingToDesktop(n:=1) {
     if (n == 0) {
         n := 10
     }
-    _RunProgram(RunProgramWhenSwitchingToDesktop%n%, "[RunProgramWhenSwitchingToDesktop] " . n)
+    _RunProgram(RunProgramWhenSwitchingToDesktop[n], "[RunProgramWhenSwitchingToDesktop] " . n)
 }
 
 _RunProgramWhenSwitchingFromDesktop(n:=1) {
     if (n == 0) {
         n := 10
     }
-    _RunProgram(RunProgramWhenSwitchingFromDesktop%n%, "[RunProgramWhenSwitchingFromDesktop] " . n)
+    _RunProgram(RunProgramWhenSwitchingFromDesktop[n], "[RunProgramWhenSwitchingFromDesktop] " . n)
 }
 
 _ChangeBackground(n:=1) {
-    line := Wallpapers%n%
-    isHex := RegExMatch(line, "^0x([0-9A-Fa-f]{1,6})", hexMatchTotal)
+    line := Wallpapers[n]
+    isHex := RegExMatch(line, "^0x([0-9A-Fa-f]{1,6})", &hexMatchTotal)
     if (isHex) {
-        hexColorReversed := SubStr("00000" . hexMatchTotal1, -5)
+        hexColorReversed := SubStr("00000" . hexMatchTotal[1], -5)
 
-        RegExMatch(hexColorReversed, "^([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})", match)
-        hexColor := "0x" . match3 . match2 . match1, hexColor += 0
+        RegExMatch(hexColorReversed, "^([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})", &match)
+        hexColor := "0x" . match[3] . match[2] . match[1], hexColor += 0
 
-        DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, "", UInt, 1)
+        DllCall("SystemParametersInfo", "UInt", 0x14, "UInt", 0, "Str", "", "UInt", 1)
         DllCall("SetSysColors", "Int", 1, "Int*", 1, "UInt*", hexColor)
     }
     else {
@@ -556,33 +625,47 @@ _ChangeBackground(n:=1) {
             filePath := (A_WorkingDir . substr(filePath, 2))
         }
         if (filePath and FileExist(filePath)) {
-            DllCall("SystemParametersInfo", UInt, 0x14, UInt, 0, Str, filePath, UInt, 1)
+            DllCall("SystemParametersInfo", "UInt", 0x14, "UInt", 0, "Str", filePath, "UInt", 1)
         }
     }
 }
 
 _ChangeAppearance(n:=1) {
-    Menu, Tray, Tip, % _GetDesktopName(n)
-    if (FileExist("./icons/" . n ".ico")) {
-        Menu, Tray, Icon, icons/%n%.ico
+    if (GeneralTrayTip) {
+        ; Hide any previous TrayTip if we switch desktops in rapid succession
+        HideTrayTip
+        TrayTip _GetDesktopName(n), , "0x10"
+    }
+    if (FileExist("./icons/" . n . ".ico")) {
+        TraySetIcon  "icons/" . n . ".ico"
     }
     else {
-        Menu, Tray, Icon, icons/+.ico
+        TraySetIcon  "icons/+.ico"
     }
+}
+
+HideTrayTip() {
+    TrayTip  ; Attempt to hide it the normal way.
+    ; if SubStr(A_OSVersion,1,3) = "10." {
+    ;     A_IconHidden := true
+    ;     Sleep 200  ; It may be necessary to adjust this sleep.
+    ;     A_IconHidden := false
+    ; }
 }
 
 ; Only give focus to the foremost window if it has been requested.
 _FocusIfRequested() {
+    global doFocusAfterNextSwitch
     if (doFocusAfterNextSwitch) {
         _Focus()
-        doFocusAfterNextSwitch=0
+        doFocusAfterNextSwitch := 0
     }
 }
 
 ; Give focus to the foremost window on the desktop.
 _Focus() {
     foremostWindowId := _GetForemostWindowIdOnDesktop(_GetCurrentDesktopNumber())
-    WinActivate, ahk_id %foremostWindowId%
+    Try WinActivate(foremostWindowId)
 }
 
 ; Select the ahk_id of the foremost window in a given virtual desktop.
@@ -591,16 +674,15 @@ _GetForemostWindowIdOnDesktop(n) {
         n := 10
     }
     ; Desktop count starts at 1 for this script, but at 0 for Windows.
-    n -= 1
+    n--
 
     ; winIDList contains a list of windows IDs ordered from the top to the bottom for each desktop.
-    WinGet winIDList, list
-    Loop % winIDList {
-        windowID := % winIDList%A_Index%
-        windowIsOnDesktop := DllCall(IsWindowOnDesktopNumberProc, UInt, WindowID, UInt, n)
+    winIDList := WinGetList()
+    for windowID in winIDList {
+        windowIsOnDesktop := DllCall(IsWindowOnDesktopNumberProc, "UInt", windowID, "UInt", n, "Int")
         ; Select the first (and foremost) window which is in the specified desktop.
-        if (WindowIsOnDesktop == 1) {
-            return WindowID
+        if (windowIsOnDesktop == 1) {
+            return windowID
         }
     }
 }
@@ -609,7 +691,6 @@ _ShowTooltip(message:="") {
     params := {}
     params.message := message
     params.lifespan := TooltipsLifespan
-    params.position := TooltipsCentered
     params.fontSize := TooltipsFontSize
     params.fontWeight := TooltipsFontInBold
     params.fontColor := TooltipsFontColor
@@ -625,17 +706,17 @@ _ShowTooltipForDesktopSwitch(n:=1) {
 }
 
 _ShowTooltipForPinnedWindow(windowTitle) {
-    _ShowTooltip("Window """ . _TruncateString(windowTitle, 30) . """ pinned.")
+    _ShowTooltip("Window `"" . _TruncateString(windowTitle, 30) . "`" pinned.")
 }
 
 _ShowTooltipForUnpinnedWindow(windowTitle) {
-    _ShowTooltip("Window """ . _TruncateString(windowTitle, 30) . """ unpinned.")
+    _ShowTooltip("Window `"" . _TruncateString(windowTitle, 30) . "`" unpinned.")
 }
 
 _ShowTooltipForPinnedApp(windowTitle) {
-    _ShowTooltip("App """ . _TruncateString(windowTitle, 30) . """ pinned.")
+    _ShowTooltip("App `"" . _TruncateString(windowTitle, 30) . "`" pinned.")
 }
 
 _ShowTooltipForUnpinnedApp(windowTitle) {
-    _ShowTooltip("App """ . _TruncateString(windowTitle, 30) . """ unpinned.")
+    _ShowTooltip("App `"" . _TruncateString(windowTitle, 30) . "`" unpinned.")
 }
