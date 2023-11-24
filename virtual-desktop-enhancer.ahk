@@ -437,7 +437,7 @@ MoveAndSwitchToDesktop(n:=1) {
 }
 
 OpenDesktopManager(hk:="") {
-    Send A_Tab
+    Send "{LWin down}{Tab}{LWin up}"
 }
 
 ; Let the user change desktop names with a prompt, without having to edit the 'settings.ini'
