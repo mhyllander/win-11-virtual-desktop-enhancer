@@ -462,10 +462,10 @@ _IsCursorHoveringTaskbar() {
     global taskbarPrimaryID, taskbarSecondaryID
     MouseGetPos(,, &mouseHoveringID)
     if (!taskbarPrimaryID) {
-        taskbarPrimaryID := WinGetID("ahk_class Shell_TrayWnd")
+        taskbarPrimaryID := WinExist("ahk_class Shell_TrayWnd")
     }
     if (!taskbarSecondaryID) {
-        taskbarSecondaryID := WinGetID("ahk_class Shell_SecondaryTrayWnd")
+        taskbarSecondaryID := WinExist("ahk_class Shell_SecondaryTrayWnd")
     }
     return (mouseHoveringID == taskbarPrimaryID || mouseHoveringID == taskbarSecondaryID)
 }
